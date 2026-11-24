@@ -458,3 +458,15 @@ html.lock,html.lock body{overflow:hidden}
   .hs-jump a.on{background:var(--c);border-color:var(--c);color:#fff}
   .sec,.grp{scroll-margin-top:112px}
 }
+/* 窄屏（≤360px，如 iPhone SE / 老安卓）：网格改单列，杜绝卡片撑破视口产生横向滚动 */
+@media(max-width:360px){
+  .chs,.stories,.stories.notes,.tiles,.pp-grid,.lg-grid,.couplets{grid-template-columns:1fr}
+  .pnav{flex-direction:column}
+  .hs-top{padding-right:2vw}
+  .hs-burger{margin-right:-4px}
+  .ph h1{font-size:clamp(38px,12vw,52px)}
+  .num .v{font-size:40px}
+  .nums.v3 .num .v{font-size:46px}
+  .rd-bar .b{font-size:14px;letter-spacing:0}
+  .eyebrow{letter-spacing:.35em;font-size:11px}
+}
