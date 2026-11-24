@@ -323,7 +323,7 @@
     const main = document.createElement('main');
     main.innerHTML = `<header class="ph arch"><div class="bg" style="background-image:url(${img('caitai')})"></div><div class="in"><div class="eyebrow">专 题 · 专 记</div><h1>洪山菜薹</h1><div class="tag">紫薹黄花，金殿玉菜</div></div></header>
       <section class="sec"><div class="wrap-narrow"><p class="lead reveal">${esc(c.lead)}</p></div><div class="wrap">${numsHTML(c.facts, 'v2')}</div></section>
-      ${section('古 籍 里 的 菜 薹', '书上是这么写的', `<div class="ct-quote">${c.quotes.map((q) => `<div class="reveal">${esc(q.text)}<small>${esc(q.src)}</small></div>`).join('')}</div>`)}
+      ${section('古 籍 里 的 菜 薹', '书上是这么写的', `<div class="ct-quote">${c.quotes.map((q) => `<div class="reveal"><p>${esc(q.text)}</p><small>${esc(q.src)}</small></div>`).join('')}</div>`)}
       ${section('身 世 年 表', '从油菜到红菜薹', `<div class="ct-tl">${c.timeline.map((t) => `<div class="reveal"><b>${esc(t.time)}</b>${esc(t.text)}</div>`).join('')}</div>`)}
       ${section('传 说', '关于一棵菜的三个故事', `<div class="stories notes">${leg.map((l) => `<article class="story reveal"><h3>${esc(l.title)}</h3><p style="white-space:pre-wrap">${esc(l.text)}</p><span class="pg">原书第 ${l.page} 页</span></article>`).join('')}</div>`)}
       ${section('同 一 片 土', '洪山的其他名优物产', tilesHTML(a.specialties))}
