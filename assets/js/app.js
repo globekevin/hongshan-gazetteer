@@ -8,6 +8,14 @@
   const CN = '〇一二三四五六七八九十';
   const cnum = (n) => n <= 10 ? CN[n] : n < 20 ? '十' + (n % 10 ? CN[n % 10] : '') : CN[Math.floor(n / 10)] + '十' + (n % 10 ? CN[n % 10] : '');
   const P = {}; D.parts.forEach((p) => (P[p.id] = p));
+  const DV = '1124d';
+  // 各部分详细解读按需加载：打开哪页只下载哪页的内容
+  const need = (ids) => Promise.all(ids.filter((id) => P[id] && !P[id]._d).map((id) => new Promise((ok) => {
+    const s = document.createElement('script'); s.src = `data/part/${id}.js?v=${DV}`;
+    s.onload = () => { Object.assign(P[id], (window.HS_D || {})[id] || {}); P[id]._d = 1; ok(); };
+    s.onerror = () => ok(); document.head.append(s);
+  })));
+  const pid = () => (P[Q.get('id')] ? Q.get('id') : 'p01');
   const G = {}; D.groups.forEach((g) => (G[g.id] = g));
   /* ---------- 响应式插画：按实际显示尺寸选图，进入视口才加载，先垫小图再换高清 ---------- */
   const WEBP = (() => { try { return document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0; } catch (e) { return false; } })();
@@ -111,9 +119,9 @@
       <div class="cards">${g.parts.map((id) => { const p = P[id]; return `<a class="card reveal" href="part.html?id=${id}"><div class="im" data-no="${partLabel(p)}" data-bg="${id}"></div><div class="tx">${g.id === 'zhengshi' ? `<small>${partLabel(p)}</small>` : ''}<h3>${esc(p.title)}</h3><p>${esc(p.tagline || '')}</p></div></a>`; }).join('')}</div>
     </div></section>`).join('')}`;
     document.body.insertBefore(main, $('.hs-foot'));
-    // 搜索
-    const idx = [];
-    D.parts.forEach((p) => {
+    // 搜索：首次输入时才加载全站索引
+    const idx = []; let idxState = 0;
+    const buildIdx = () => D.parts.forEach((p) => {
       idx.push({ t: p.title, s: (p.tagline || '') + ' ' + (p.keywords || []).join(' '), h: partHref(p), k: partLabel(p) });
       (p.stories || []).forEach((s) => idx.push({ t: s.title, s: s.text, h: partHref(p), k: p.title + ' · 故事' }));
       (p.chapters || []).forEach((c, i) => {
@@ -126,6 +134,11 @@
     const run = () => {
       const q = $('#q').value.trim(), box = $('#sr');
       if (!q) { box.style.display = 'none'; return; }
+      if (idxState !== 2) {
+        box.innerHTML = '<a>正在载入索引……</a>'; box.style.display = 'block';
+        if (!idxState) { idxState = 1; need(D.parts.map((p) => p.id)).then(() => { buildIdx(); idxState = 2; run(); }); }
+        return;
+      }
       const res = idx.filter((x) => (x.t + x.s).includes(q)).slice(0, 40);
       box.innerHTML = res.length ? res.map((x) => `<a href="${x.h}"><b>${esc(x.t).replaceAll(esc(q), `<mark>${esc(q)}</mark>`)}</b><span>${esc(x.k)}</span></a>`).join('') : '<a>未找到相关条目，换个词试试</a>';
       box.style.display = 'block';
@@ -181,7 +194,7 @@
   /* ---------- 原文阅读 ---------- */
   function loadText(id, cb) {
     if (window.HS_TEXT && HS_TEXT[id]) return cb(HS_TEXT[id]);
-    const s = document.createElement('script'); s.src = `data/text/${id}.js`; s.onload = () => cb(HS_TEXT[id]); document.head.append(s);
+    const s = document.createElement('script'); s.src = `data/text/${id}.js?v=${DV}`; s.onload = () => cb(HS_TEXT[id]); document.head.append(s);
   }
   function blocksHTML(blocks, lastPg) {
     let h = '';
@@ -362,5 +375,14 @@
     reveal(); countUp();
   }
 
-  window.HSApp = { atlas, part, read, overview, timeline, people, legends, caitai };
+  window.HSApp = {
+    atlas,
+    part: () => need([pid()]).then(part),
+    read: () => need([pid()]).then(read),
+    overview: () => need(['zongshu', 'p02']).then(overview),
+    timeline: () => need(['dashiji']).then(timeline),
+    people: () => need(['renwu']).then(people),
+    legends: () => need(['fulu']).then(legends),
+    caitai: () => need(['p07', 'fulu']).then(caitai),
+  };
 })();
