@@ -33,7 +33,9 @@
       if (!ok) { el.style.backgroundImage = `url(assets/img/${id}.jpg)`; return; }
       const dpr = saveData ? 1 : Math.min(2, devicePixelRatio || 1);
       let need = Math.max(el.clientWidth, el.clientHeight * 1.5) * dpr; // 图为 3:2，cover 裁切
-      if (innerWidth <= 760) need = Math.min(need, 1600);               // 手机不下发 2560
+      // 手机（含竖屏平板）只用 800 档：屏幕小、图上压着文字与渐变，800px 足够清晰；
+      // 且 w===800 时直接 return，不再发第二次高清请求，单张头图从 ~285KB 降到 ~82KB。
+      if (innerWidth <= 760 || (innerWidth <= 900 && innerHeight > innerWidth)) need = 800;
       const w = BG_W.find((x) => x >= need * 0.9) || BG_W[BG_W.length - 1];
       const small = `url(${bgSrc(id, 800)})`;
       el.style.backgroundImage = small;
