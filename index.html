@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>洪山 · 一株菜薹里的区志</title>
 <meta name="description" content="以一只瓢虫的视角走进洪山菜薹林，读懂《洪山区志》里的山水、物产、人物与风俗。">
-<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/site.css?v=1124c">
 <style>
   html,body{height:100%;overflow:hidden;background:#efe6cf}
   .sky{position:fixed;inset:0;background:
@@ -38,16 +38,16 @@
   .btn-main:hover{background:#5e1f45;transform:translateY(-2px);letter-spacing:.6em}
   .btn-main i{font-style:normal;letter-spacing:0;transition:.35s}
   .btn-main:hover i{transform:translateX(5px)}
-  .btn-ghost{padding:13px 22px;border-radius:999px;border:1px solid rgba(122,47,92,.45);color:#5e1f45;text-decoration:none;font-size:14px;letter-spacing:.2em;background:rgba(255,250,236,.55);backdrop-filter:blur(6px);transition:.3s}
+  .btn-ghost{padding:13px 22px;border-radius:999px;border:1px solid rgba(122,47,92,.45);color:#5e1f45;text-decoration:none;font-size:14px;letter-spacing:.2em;background:#fdf5e2;transition:.3s}
   .btn-ghost:hover{background:#fff8ea}
-  .topnav{position:fixed;right:3vw;top:22px;z-index:6;display:flex;gap:24px;padding:10px 24px;border-radius:999px;background:rgba(255,248,232,.72);backdrop-filter:blur(10px);box-shadow:0 8px 24px -14px rgba(60,20,40,.35)}
-  .topnav a{color:#3d2a33;text-decoration:none;font-size:14px;letter-spacing:.25em;position:relative;text-shadow:0 1px 10px rgba(255,248,230,.9)}
+  .topnav{position:fixed;right:3vw;top:22px;z-index:6;display:flex;gap:24px;padding:10px 24px}
+  .topnav a{color:#24121c;font-weight:600;text-decoration:none;font-size:14px;letter-spacing:.25em;position:relative;text-shadow:0 0 3px rgba(255,250,236,.95),0 0 9px rgba(255,250,236,.9),0 0 18px rgba(255,250,236,.7)}
   .topnav a:after{content:"";position:absolute;left:0;right:.25em;bottom:-6px;height:1px;background:#7a2f5c;transform:scaleX(0);transition:.3s;transform-origin:left}
   .topnav a:hover:after{transform:scaleX(1)}
   .brand{position:fixed;left:4vw;top:18px;z-index:6;display:flex;align-items:flex-end;gap:10px;text-decoration:none;color:#2b1a24}
   .brand b{font-family:var(--kai);font-weight:400;font-size:20px;letter-spacing:.2em;margin-bottom:12px}
-  .foot{position:fixed;left:7vw;bottom:22px;z-index:6;font-size:12px;color:#4a3640;letter-spacing:.12em;background:rgba(255,248,232,.62);padding:6px 14px;border-radius:999px;backdrop-filter:blur(6px)}
-  .hint{position:fixed;right:4vw;bottom:22px;z-index:6;font-size:12px;color:#4a3640;letter-spacing:.2em;display:flex;align-items:center;gap:8px;background:rgba(255,248,232,.7);padding:6px 14px 6px 8px;border-radius:999px;backdrop-filter:blur(6px)}
+  .foot{position:fixed;left:7vw;bottom:22px;z-index:6;font-size:12px;color:#fff6e2;letter-spacing:.12em;text-shadow:0 0 3px rgba(30,14,24,.95),0 0 8px rgba(30,14,24,.85),0 0 16px rgba(30,14,24,.6)}
+  .hint{position:fixed;right:4vw;bottom:22px;z-index:6;font-size:12px;color:#fff6e2;letter-spacing:.2em;display:flex;align-items:center;gap:8px;text-shadow:0 0 3px rgba(30,14,24,.95),0 0 8px rgba(30,14,24,.85),0 0 16px rgba(30,14,24,.6)}
   .hint em{display:inline-block;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff6a4a,#c41e14);position:relative}
   .hint em:after{content:"";position:absolute;left:50%;top:2px;bottom:2px;width:1px;background:#2a0c08}
   .intro-veil{position:fixed;inset:0;background:#f3ead4;z-index:20;pointer-events:none;animation:veil 1.6s .2s ease forwards}
@@ -55,15 +55,14 @@
   .copy>*{opacity:0;transform:translateY(14px);animation:rise 1.1s ease forwards}
   .copy .loc{animation-delay:.9s}.copy h1{animation-delay:1.1s}.copy .en{animation-delay:1.35s}.copy p{animation-delay:1.6s}.copy .cta{animation-delay:1.9s}
   @keyframes rise{to{opacity:1;transform:none}}
-  @media (min-width:761px){
-    .copy p{color:#24121c;font-weight:600;text-shadow:0 0 3px rgba(255,250,236,.95),0 0 10px rgba(255,250,236,.9),0 0 22px rgba(255,250,236,.7)}
-    .copy .en{color:#4a3340;text-shadow:0 0 6px rgba(255,250,236,.9)}
-    .copy .loc{color:#5e1f45;font-weight:600;text-shadow:0 0 3px rgba(255,250,236,.95),0 0 10px rgba(255,250,236,.9)}
-  }
-  @media (max-width:760px){
-    .copy{left:6vw;top:auto;bottom:90px;transform:none;padding:18px 18px 22px;background:rgba(255,248,232,.62);backdrop-filter:blur(8px);border-radius:18px;max-width:88vw}
+  .copy p{color:#24121c;font-weight:600;text-shadow:0 0 3px rgba(255,250,236,.95),0 0 10px rgba(255,250,236,.9),0 0 22px rgba(255,250,236,.7)}
+  .copy .en{color:#4a3340;text-shadow:0 0 6px rgba(255,250,236,.9)}
+  .copy .loc{color:#5e1f45;font-weight:600;text-shadow:0 0 3px rgba(255,250,236,.95),0 0 10px rgba(255,250,236,.9)}
+  @media (max-width:760px),(max-width:900px) and (orientation:portrait){
+    .copy{left:7vw;top:104px;bottom:auto;transform:none;max-width:86vw}
+    .copy h1{font-size:clamp(64px,21vw,92px)}.copy .en{margin-bottom:14px}.cta{margin-top:20px;gap:10px}.btn-main{padding:12px 28px;font-size:16px}.btn-ghost{padding:10px 18px}
     .topnav{display:none}.hint{display:none}.foot{left:6vw;right:6vw;bottom:14px;font-size:11px}
-    .copy p{font-size:15px}
+    .copy p{font-size:15px;line-height:1.85}
   }
 </style>
 <script async src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-analytics@latest/lib/analytics.global.js"></script>
@@ -99,6 +98,6 @@
 
 <script src="assets/js/logo.js"></script>
 <script>document.getElementById('brand').innerHTML = HSLogo(46) + '<b>洪山志览</b>';</script>
-<script src="assets/js/hero.js"></script>
+<script src="assets/js/hero.js?v=1124c"></script>
 </body>
 </html>

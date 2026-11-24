@@ -55,30 +55,32 @@
 
   let far = [], back = [], mid = [], near = [], pads = [];
   function layout() {
+    const wide = W > 760 && !(W <= 900 && H > W); // 竖屏平板按手机布局
     far = []; back = []; mid = []; near = [];
     const sc = Math.max(0.7, Math.min(1.35, W / 1400));
     const n = Math.round(W / 30);
+    const mk = wide ? 1 : 0.5; // 手机：菜薹降到下半屏，天空留给文字
     for (let i = 0; i < n; i++) {
-      far.push(makeStem({ x0: rnd(-20, W + 20), h: H * rnd(0.3, 0.6), w0: rnd(2.5, 4.5) * sc, flowerN: 10, leafN: 3, leafScale: 0.9, fscale: sc }));
+      far.push(makeStem({ x0: rnd(-20, W + 20), h: H * rnd(0.3, 0.6) * (wide ? 1 : 0.7), w0: rnd(2.5, 4.5) * sc, flowerN: 10, leafN: 3, leafScale: 0.9, fscale: sc }));
     }
-    const nb = W > 760 ? 9 : 5;
+    const nb = wide ? 9 : 5;
     for (let i = 0; i < nb; i++) {
-      back.push(makeStem({ x0: W * (0.3 + 0.72 * i / nb) + rnd(-30, 30), h: H * rnd(0.55, 0.82), w0: rnd(7, 10) * sc, flowerN: 16, leafN: 5, fscale: sc * rnd(0.9, 1.1), lean: rnd(-0.1, 0.1) }));
+      back.push(makeStem({ x0: W * (0.3 + 0.72 * i / nb) + rnd(-30, 30), h: H * rnd(0.55, 0.82) * mk, w0: rnd(7, 10) * sc, flowerN: 16, leafN: 5, fscale: sc * rnd(0.9, 1.1), lean: rnd(-0.1, 0.1) }));
     }
     // 主体：右侧成丛、左侧留白给标题（昆虫视角：茎粗、花大、花头逼近画面上缘）
-    const spots = W > 760 ? [0.47, 0.62, 0.77, 0.9] : [0.12, 0.45, 0.8];
+    const spots = wide ? [0.47, 0.62, 0.77, 0.9] : [0.12, 0.45, 0.8];
     const hs = [0.88, 0.97, 0.8, 0.9];
     spots.forEach((p, i) => {
       mid.push(makeStem({
-        x0: W * p + rnd(-25, 25), h: H * hs[i % 4] * rnd(0.97, 1.03), w0: rnd(26, 32) * sc,
+        x0: W * p + rnd(-25, 25), h: H * hs[i % 4] * rnd(0.97, 1.03) * mk, w0: rnd(26, 32) * sc,
         flowerN: 24, leafN: 6, leafScale: 1.15, fscale: sc * rnd(1.55, 1.8), lean: rnd(-0.12, 0.08)
       }));
     });
     // 近景虚化大茎
-    near.push(makeStem({ x0: W * (W > 760 ? -0.012 : 0.035), h: H * 1.2, w0: 62 * sc, flowerN: 18, leafN: W > 760 ? 0 : 4, fscale: sc * 4.2, leafScale: 1.3, lean: W > 760 ? -0.02 : 0.06 }));
-    near.push(makeStem({ x0: W * 1.0, h: H * 0.95, w0: 52 * sc, flowerN: 18, leafN: 3, fscale: sc * 3.8, leafScale: 1.2, lean: -0.1 }));
+    near.push(makeStem({ x0: W * (wide ? -0.012 : -0.07), h: H * 1.2 * mk, w0: 62 * sc, flowerN: 18, leafN: 0, fscale: sc * 4.2, leafScale: 1.3, lean: -0.02 }));
+    near.push(makeStem({ x0: W * 1.0, h: H * 0.95 * mk, w0: 52 * sc, flowerN: 18, leafN: 3, fscale: sc * 3.8, leafScale: 1.2, lean: -0.1 }));
     // 前景承托叶（瓢虫所在）
-    pads = [{ x0: W * (W > 760 ? 0.33 : 0.1), y0: H + 40, len: Math.min(W * 0.56, 860) * (W > 760 ? 1 : 1.35), ang: -0.4, wid: 0.36, ph: 0 }];
+    pads = [{ x0: W * (wide ? 0.33 : 0.1), y0: wide ? H + 40 : H - 16, len: Math.min(W * 0.56, 860) * (wide ? 1 : 1.35), ang: -0.4, wid: 0.36, ph: 0 }];
   }
 
   function resize() {
