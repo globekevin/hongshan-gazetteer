@@ -21,25 +21,30 @@
   const WEBP = (() => { try { return document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0; } catch (e) { return false; } })();
   // Safari 的 canvas 不能编码 webp 但能显示，用解码探测
   const webpOK = WEBP ? Promise.resolve(true) : new Promise((r) => { const i = new Image(); i.onload = () => r(i.width > 0); i.onerror = () => r(false); i.src = 'data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA'; });
-  const BG_W = [800, 1600, 2560];
+  const BG_W = [400, 800, 1600, 2560];
   const saveData = !!(navigator.connection && navigator.connection.saveData);
   const bgSrc = (id, w) => `assets/img/w${w}/${id}.webp`;
   const bgIO = new IntersectionObserver((es) => es.forEach((e) => {
     if (!e.isIntersecting) return; bgIO.unobserve(e.target); loadBg(e.target);
   }), { rootMargin: '300px 0px' });
+  // 手机：装饰性插画按 1x 算像素（图上压着文字与渐变，不需视网膜级），封顶 800；
+  // 因此小卡片约 160~340px 宽走 400 档(~20KB)，大头图走 800 档(~80KB)。
+  // PC 保持 2x dpr，画质不变。
+  const isMobile = () => innerWidth <= 760 || (innerWidth <= 900 && innerHeight > innerWidth);
   function loadBg(el) {
     const id = el.dataset.bg;
     webpOK.then((ok) => {
       if (!ok) { el.style.backgroundImage = `url(assets/img/${id}.jpg)`; return; }
-      const dpr = saveData ? 1 : Math.min(2, devicePixelRatio || 1);
+      const mob = isMobile();
+      const dpr = saveData ? 1 : (mob ? 1 : Math.min(2, devicePixelRatio || 1));
       let need = Math.max(el.clientWidth, el.clientHeight * 1.5) * dpr; // 图为 3:2，cover 裁切
-      // 手机（含竖屏平板）只用 800 档：屏幕小、图上压着文字与渐变，800px 足够清晰；
-      // 且 w===800 时直接 return，不再发第二次高清请求，单张头图从 ~285KB 降到 ~82KB。
-      if (innerWidth <= 760 || (innerWidth <= 900 && innerHeight > innerWidth)) need = 800;
-      const w = BG_W.find((x) => x >= need * 0.9) || BG_W[BG_W.length - 1];
-      const small = `url(${bgSrc(id, 800)})`;
+      if (mob) need = Math.min(need, 800);
+      let w = BG_W.find((x) => x >= need * 0.9) || BG_W[BG_W.length - 1];
+      if (!mob) w = Math.max(w, 800);                     // PC 端最低 800，画质与改版前完全一致
+      const base = mob ? 400 : 800;                       // 先垫的底图
+      const small = `url(${bgSrc(id, base)})`;
       el.style.backgroundImage = small;
-      if (w === 800) return;
+      if (w === base) return;
       const im = new Image();
       im.onload = () => { const set = () => { el.style.backgroundImage = `url(${im.src}), ${small}`; }; im.decode ? im.decode().then(set, set) : set(); };
       im.src = bgSrc(id, w);
