@@ -78,7 +78,7 @@
     near.push(makeStem({ x0: W * 0.035, h: H * 1.2, w0: 62 * sc, flowerN: 18, leafN: 4, fscale: sc * 4.2, leafScale: 1.3, lean: 0.06 }));
     near.push(makeStem({ x0: W * 1.0, h: H * 0.95, w0: 52 * sc, flowerN: 18, leafN: 3, fscale: sc * 3.8, leafScale: 1.2, lean: -0.1 }));
     // 前景承托叶（瓢虫所在）
-    pads = [{ x0: W * (W > 760 ? 0.24 : 0.1), y0: H + 40, len: Math.min(W * 0.56, 860) * (W > 760 ? 1 : 1.35), ang: -0.4, wid: 0.36, ph: 0 }];
+    pads = [{ x0: W * (W > 760 ? 0.33 : 0.1), y0: H + 40, len: Math.min(W * 0.56, 860) * (W > 760 ? 1 : 1.35), ang: -0.4, wid: 0.36, ph: 0 }];
   }
 
   function resize() {
