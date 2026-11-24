@@ -1,3 +1,5 @@
+/* 锁死字号缩放：微信/系统大字模式放大网页字号会导致顶栏压字、标题裁切、文字换行错乱 */
+html{-webkit-text-size-adjust:100% !important;text-size-adjust:100% !important}
 :root{
   --kai:"STKaiti","Kaiti SC","KaiTi","楷体","BiauKai",serif;
   --song:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
@@ -31,8 +33,9 @@ a:hover .hs-st{animation-duration:1.6s}
 .hs-corner{position:relative;display:flex;align-items:flex-end;gap:10px;text-decoration:none;color:var(--ink);padding:6px 22px 6px 2.4vw;align-self:flex-start;background:rgba(246,240,226,.82);backdrop-filter:blur(10px);border-bottom-right-radius:28px;box-shadow:0 8px 24px -16px rgba(40,20,30,.45)}
 .hs-top.solid .hs-corner{background:none;box-shadow:none;backdrop-filter:none}
 .hs-corner .hs-logo-svg{margin-top:2px;filter:drop-shadow(0 4px 6px rgba(80,30,60,.18))}
-.hs-corner b{font-family:var(--kai);font-weight:400;font-size:21px;letter-spacing:.22em;margin-bottom:12px;white-space:nowrap}
-.hs-corner small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.4em;color:var(--ink2);margin-top:2px}
+.hs-corner b{font-family:var(--kai);font-weight:400;font-size:21px;letter-spacing:.22em;margin-bottom:12px;white-space:nowrap;flex:none}
+.hs-corner small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.4em;color:var(--ink2);margin-top:2px;white-space:nowrap}
+.hs-corner .hs-logo-svg{flex:none}
 .hs-nav{display:flex;gap:2px;padding:4px;border-radius:999px;background:rgba(246,240,226,.78);backdrop-filter:blur(10px);box-shadow:0 6px 20px -14px rgba(40,20,30,.4)}
 .hs-nav a{text-decoration:none;font-size:14px;letter-spacing:.2em;padding:8px 12px;border-radius:999px;color:var(--ink2);transition:.25s}
 .hs-nav a:hover{color:var(--purple);background:rgba(122,47,92,.07)}
@@ -252,12 +255,12 @@ a:hover .hs-st{animation-duration:1.6s}
 .sp:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(20,10,15,.7))}
 .sp .t{position:relative;z-index:2}
 .sp small{font-size:11px;letter-spacing:.4em;opacity:.85}
-.sp h3{font-family:var(--kai);font-weight:400;font-size:32px;margin:4px 0 2px;letter-spacing:.1em}
+.sp h3{font-family:var(--kai);font-weight:400;font-size:clamp(22px,7vw,32px);margin:4px 0 2px;letter-spacing:.1em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sp p{margin:0;font-size:13px;opacity:.9}
-.sp:first-child h3{font-size:46px}
+.sp:first-child h3{font-size:clamp(30px,10vw,46px)}
 .grp{padding:70px 0 20px;border-top:1px solid var(--line);position:relative}
 .grp-head{display:flex;align-items:flex-end;gap:24px;margin-bottom:34px;flex-wrap:wrap}
-.grp-head .gn{font-family:var(--kai);font-size:54px;letter-spacing:.1em;color:var(--c);line-height:1}
+.grp-head .gn{font-family:var(--kai);font-size:clamp(38px,10vw,54px);letter-spacing:.1em;color:var(--c);line-height:1;white-space:nowrap}
 .grp-head .ge{font-size:11px;letter-spacing:.5em;color:var(--ink2)}
 .grp-head .gd{font-family:var(--song);color:var(--ink2);font-size:16px}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
