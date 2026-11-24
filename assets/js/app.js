@@ -8,7 +8,7 @@
   const CN = '〇一二三四五六七八九十';
   const cnum = (n) => n <= 10 ? CN[n] : n < 20 ? '十' + (n % 10 ? CN[n % 10] : '') : CN[Math.floor(n / 10)] + '十' + (n % 10 ? CN[n % 10] : '');
   const P = {}; D.parts.forEach((p) => (P[p.id] = p));
-  const DV = '1124d';
+  const DV = '1124e';
   // 各部分详细解读按需加载：打开哪页只下载哪页的内容
   const need = (ids) => Promise.all(ids.filter((id) => P[id] && !P[id]._d).map((id) => new Promise((ok) => {
     const s = document.createElement('script'); s.src = `data/part/${id}.js?v=${DV}`;
@@ -64,7 +64,11 @@
       <nav class="hs-nav">${nav.map(([h, t]) => `<a href="${h}" class="${active === h ? 'on' : ''}">${t}</a>`).join('')}</nav>`;
     document.body.prepend(top);
     $('.hs-burger', top).onclick = () => $('.hs-nav', top).classList.toggle('open');
-    const onS = () => top.classList.toggle('solid', scrollY > 40);
+    const up = document.createElement('button');
+    up.className = 'hs-totop'; up.setAttribute('aria-label', '回到顶部'); up.textContent = '↑';
+    up.onclick = () => scrollTo({ top: 0, behavior: 'smooth' });
+    document.body.append(up);
+    const onS = () => { top.classList.toggle('solid', scrollY > 40); up.classList.toggle('show', scrollY > innerHeight * 1.5); };
     addEventListener('scroll', onS, { passive: true }); onS();
     const f = document.createElement('footer');
     f.className = 'hs-foot';
@@ -72,7 +76,30 @@
       <div style="max-width:560px;line-height:1.8">内容依据《洪山区志》（武汉市洪山区地方志编纂委员会 编，武汉出版社）整理解读，记述时限主要至2000年，附录延至2006年。原文经 OCR 识别，个别字词或有出入，引用请以纸本为准。插画为 AI 创作的示意图。</div></div>`;
     document.body.append(f);
   }
+  function jumpbar() {
+    if ($('.hs-jump') || $('.rd')) return;
+    const hs = $$('main h2.sec-title'); if (hs.length < 3) return;
+    const secs = hs.map((h, k) => { const s = h.closest('section') || h; if (!s.id) s.id = 'j' + k; return s; });
+    const bar = document.createElement('nav'); bar.className = 'hs-jump'; bar.setAttribute('aria-label', '本页板块');
+    hs.forEach((h, k) => {
+      const t = h.textContent.split('·')[0].replace(/\s+/g, '').replace(/[，,。？?！!：:].*$/, '').slice(0, 8);
+      const x = document.createElement('a'); x.href = '#' + secs[k].id; x.textContent = t;
+      x.onclick = (e) => { e.preventDefault(); secs[k].scrollIntoView({ behavior: 'smooth' }); };
+      bar.append(x);
+    });
+    document.body.append(bar);
+    let last = -2;
+    const onS = () => {
+      bar.classList.toggle('show', scrollY > 120 && secs[0].getBoundingClientRect().top < innerHeight * 0.6);
+      let cur = -1; secs.forEach((s, k) => { if (s.getBoundingClientRect().top < 150) cur = k; });
+      if (cur === last) return; last = cur;
+      [...bar.children].forEach((x, k) => x.classList.toggle('on', k === cur));
+      const on = bar.children[cur]; if (on) bar.scrollTo({ left: on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2, behavior: 'smooth' });
+    };
+    addEventListener('scroll', onS, { passive: true }); onS();
+  }
   function reveal() {
+    jumpbar();
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.08 });
     $$('.reveal').forEach((el) => io.observe(el));
   }
@@ -250,6 +277,23 @@
               ${nextH ? `<a class="nx" href="${nextH}"><small>下一章 →</small><b>${esc(tName(nextI))}</b></a>` : `<a class="nx" href="${partHref(p)}"><small>本篇读完 →</small><b>回到${esc(p.title)}</b></a>`}</div>
           </article></div>`;
       document.body.insertBefore(main, $('.hs-foot'));
+      // 手机：底部操作栏 + 目录抽屉
+      document.body.classList.add('reading');
+      const side = $('.rd-side'), mask = document.createElement('div'); mask.className = 'rd-mask';
+      const bar = document.createElement('div'); bar.className = 'rd-bar';
+      bar.innerHTML = `${prevH ? `<a class="b" href="${prevH}">‹ 上一章</a>` : `<a class="b" href="${partHref(p)}">‹ 返回</a>`}
+        <button class="b toc" type="button">☰ 目录</button>
+        ${nextH ? `<a class="b" href="${nextH}">下一章 ›</a>` : `<a class="b" href="${partHref(p)}">读完 ›</a>`}`;
+      side.insertAdjacentHTML('afterbegin', '<div class="rd-grip"><b>目录</b><button type="button" class="rd-x" aria-label="关闭目录">×</button></div>');
+      document.body.append(mask, bar);
+      const openToc = (v) => { side.classList.toggle('open', v); mask.classList.toggle('open', v); document.documentElement.classList.toggle('lock', v); if (v) { const on = $('.sgrp a.on', side); on && on.scrollIntoView({ block: 'center' }); } };
+      $('.toc', bar).onclick = () => openToc(true);
+      mask.onclick = () => openToc(false); $('.rd-x', side).onclick = () => openToc(false);
+      $$('.secl a', side).forEach((x) => x.addEventListener('click', (e) => {
+        e.preventDefault(); openToc(false);
+        const t = document.getElementById(x.dataset.s); history.replaceState(null, '', '#' + x.dataset.s);
+        requestAnimationFrame(() => t && t.scrollIntoView({ behavior: 'smooth' }));
+      }));
       // 字号
       let fs = parseFloat(localStorage.getItem('hs-fs') || '18');
       const apply = () => { $('#body').style.fontSize = fs + 'px'; localStorage.setItem('hs-fs', fs); }; apply();
