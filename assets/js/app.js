@@ -9,7 +9,37 @@
   const cnum = (n) => n <= 10 ? CN[n] : n < 20 ? '十' + (n % 10 ? CN[n % 10] : '') : CN[Math.floor(n / 10)] + '十' + (n % 10 ? CN[n % 10] : '');
   const P = {}; D.parts.forEach((p) => (P[p.id] = p));
   const G = {}; D.groups.forEach((g) => (G[g.id] = g));
-  const img = (id) => `assets/img/${id}.jpg`;
+  /* ---------- 响应式插画：按实际显示尺寸选图，进入视口才加载，先垫小图再换高清 ---------- */
+  const WEBP = (() => { try { return document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0; } catch (e) { return false; } })();
+  // Safari 的 canvas 不能编码 webp 但能显示，用解码探测
+  const webpOK = WEBP ? Promise.resolve(true) : new Promise((r) => { const i = new Image(); i.onload = () => r(i.width > 0); i.onerror = () => r(false); i.src = 'data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA'; });
+  const BG_W = [800, 1600, 2560];
+  const saveData = !!(navigator.connection && navigator.connection.saveData);
+  const bgSrc = (id, w) => `assets/img/w${w}/${id}.webp`;
+  const bgIO = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return; bgIO.unobserve(e.target); loadBg(e.target);
+  }), { rootMargin: '300px 0px' });
+  function loadBg(el) {
+    const id = el.dataset.bg;
+    webpOK.then((ok) => {
+      if (!ok) { el.style.backgroundImage = `url(assets/img/${id}.jpg)`; return; }
+      const dpr = saveData ? 1 : Math.min(2, devicePixelRatio || 1);
+      let need = Math.max(el.clientWidth, el.clientHeight * 1.5) * dpr; // 图为 3:2，cover 裁切
+      if (innerWidth <= 760) need = Math.min(need, 1600);               // 手机不下发 2560
+      const w = BG_W.find((x) => x >= need * 0.9) || BG_W[BG_W.length - 1];
+      const small = `url(${bgSrc(id, 800)})`;
+      el.style.backgroundImage = small;
+      if (w === 800) return;
+      const im = new Image();
+      im.onload = () => { const set = () => { el.style.backgroundImage = `url(${im.src}), ${small}`; }; im.decode ? im.decode().then(set, set) : set(); };
+      im.src = bgSrc(id, w);
+    });
+  }
+  new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => {
+    if (n.nodeType !== 1) return;
+    if (n.matches('[data-bg]')) bgIO.observe(n);
+    n.querySelectorAll('[data-bg]').forEach((x) => bgIO.observe(x));
+  }))).observe(document.documentElement, { childList: true, subtree: true });
   const partLabel = (p) => p.no ? `第${cnum(p.no)}篇` : ({ zongshu: '卷首', dashiji: '卷首', renwu: '卷末', fulu: '卷末' }[p.id] || '');
   const ordered = D.parts.filter((p) => p.no).sort((a, b) => a.no - b.no);
   const SPECIAL_LINK = { zongshu: 'overview.html', dashiji: 'timeline.html', renwu: 'people.html', fulu: 'legends.html' };
@@ -73,12 +103,12 @@
       <p class="sub">《洪山区志》共 29 篇，外加总述、大事记、人物与附录，从两亿年前的燕山运动写到光谷的光纤。我们把它拆成六座“园子”——山水、建置、物产、政事、文教、民生，挑着读，也能一页页翻原文。</p>
       <div class="atlas-search"><input id="q" placeholder="搜一搜：菜薹、东湖、卓刀泉、方言、血吸虫……"><button id="qb">查 找</button></div>
       <div class="sr" id="sr"></div>
-      <div class="specials">${specials.map(([h, im, s, t, d]) => `<a class="sp reveal" href="${h}"><div class="bg" style="background-image:url(${img(im)})"></div><div class="t"><small>${s}</small><h3>${t}</h3><p>${esc(d)}</p></div></a>`).join('')}</div>
+      <div class="specials">${specials.map(([h, im, s, t, d]) => `<a class="sp reveal" href="${h}"><div class="bg" data-bg="${im}"></div><div class="t"><small>${s}</small><h3>${t}</h3><p>${esc(d)}</p></div></a>`).join('')}</div>
     </div></section>
     ${D.groups.map((g) => `
     <section class="grp g-${g.id}" style="--c:${g.color}"><div class="wrap">
       <div class="grp-head reveal"><div class="gn">${g.name}</div><div><div class="ge">${g.en}</div><div class="gd">${g.desc}</div></div></div>
-      <div class="cards">${g.parts.map((id) => { const p = P[id]; return `<a class="card reveal" href="part.html?id=${id}"><div class="im" data-no="${partLabel(p)}" style="background-image:url(${img(id)})"></div><div class="tx">${g.id === 'zhengshi' ? `<small>${partLabel(p)}</small>` : ''}<h3>${esc(p.title)}</h3><p>${esc(p.tagline || '')}</p></div></a>`; }).join('')}</div>
+      <div class="cards">${g.parts.map((id) => { const p = P[id]; return `<a class="card reveal" href="part.html?id=${id}"><div class="im" data-no="${partLabel(p)}" data-bg="${id}"></div><div class="tx">${g.id === 'zhengshi' ? `<small>${partLabel(p)}</small>` : ''}<h3>${esc(p.title)}</h3><p>${esc(p.tagline || '')}</p></div></a>`; }).join('')}</div>
     </div></section>`).join('')}`;
     document.body.insertBefore(main, $('.hs-foot'));
     // 搜索
@@ -114,7 +144,7 @@
     chrome('atlas.html');
     const v = VARIANT[p.group];
     const hero = `<header class="ph ${v === 'full' ? '' : v}">
-      <div class="bg" style="background-image:url(${img(p.id)})"></div>
+      <div class="bg" data-bg="${p.id}"></div>
       <div class="in">${v === 'band' ? `<div><div class="eyebrow">${g.name} · ${partLabel(p)}</div><h1>${esc(p.title)}</h1><div class="tag">${esc(p.tagline)}</div></div><div class="seal">${cnum(p.no)}<br>篇</div>`
         : `<div class="eyebrow">${g.name} · ${partLabel(p)}</div><h1>${esc(p.title)}</h1><div class="tag">${esc(p.tagline)}</div>`}</div>
       ${v === 'full' ? '<div class="scroll">向下阅读</div>' : ''}
@@ -122,9 +152,9 @@
     const nv = ['', 'v2', 'v3'][p.no % 3], sv = ['', 'notes', 'line'][(p.no + 1) % 3];
     let extras = '';
     if (p.places) extras += section('街 · 乡 · 镇', '十四个地名的前世今生', tilesHTML(p.places, 'type'));
-    if (p.caitai) extras += `<section class="sec"><div class="wrap"><a href="caitai.html" class="sp reveal" style="height:320px;display:flex"><div class="bg" style="background-image:url(${img('caitai')})"></div><div class="t"><small>专题 · 专记</small><h3>洪山菜薹：金殿玉菜</h3><p>${esc(p.caitai.lead.slice(0, 60))}……</p></div></a></div></section>`
+    if (p.caitai) extras += `<section class="sec"><div class="wrap"><a href="caitai.html" class="sp reveal" style="height:320px;display:flex"><div class="bg" data-bg="${'caitai'}"></div><div class="t"><small>专题 · 专记</small><h3>洪山菜薹：金殿玉菜</h3><p>${esc(p.caitai.lead.slice(0, 60))}……</p></div></a></div></section>`
       + section('名 优 特 产', '洪山的“菜篮子”明星', tilesHTML(p.specialties));
-    if (p.sights) extras += `<section class="sec"><div class="wrap"><div class="eyebrow">湖 光 山 色</div><h2 class="sec-title">去洪山，看什么</h2><div class="sp reveal" style="height:300px;display:flex;margin-bottom:24px"><div class="bg" style="background-image:url(${img('tour')})"></div><div class="t"><small>旅游业</small><h3>东湖之滨，洪山之麓</h3></div></div>${tilesHTML(p.sights)}</div></section>`;
+    if (p.sights) extras += `<section class="sec"><div class="wrap"><div class="eyebrow">湖 光 山 色</div><h2 class="sec-title">去洪山，看什么</h2><div class="sp reveal" style="height:300px;display:flex;margin-bottom:24px"><div class="bg" data-bg="${'tour'}"></div><div class="t"><small>旅游业</small><h3>东湖之滨，洪山之麓</h3></div></div>${tilesHTML(p.sights)}</div></section>`;
     if (p.universities) extras += section('大 学 之 城', '区内的高等学府', tilesHTML(p.universities));
     if (p.relics) extras += section('文 物 古 迹', '六千年的地下与地上', tilesHTML(p.relics));
     if (p.customs) extras += section('生 活 习 俗', '老洪山人的日子', tilesHTML(p.customs.map((c) => ({ name: c.title, text: c.text, page: c.page }))));
@@ -192,7 +222,7 @@
       const tName = (k) => k < 0 ? '概述' : T.chapters[k].title;
       const main = document.createElement('main');
       main.innerHTML = `<div class="progress" id="prog"></div>
-        <header class="rd-head"><div class="bg" style="background-image:url(${img(p.id === 'fulu' ? 'fulu' : p.id)})"></div><div class="in">
+        <header class="rd-head"><div class="bg" data-bg="${p.id === 'fulu' ? 'fulu' : p.id}"></div><div class="in">
           <div class="crumb"><a href="atlas.html">志览</a> / <a href="${partHref(p)}">${partLabel(p)} ${esc(p.title)}</a> / ${chLabel}</div>
           <h1>${esc(ch.title)}</h1></div></header>
         <div class="rd">
@@ -229,7 +259,7 @@
     const z = P.zongshu, pl = P.p02;
     const icons = ['◎', '⌂', '⛰', '⚘', '⚙', '✎', '✚', '✦'];
     const main = document.createElement('main');
-    main.innerHTML = `<header class="ph"><div class="bg" style="background-image:url(${img('zongshu')})"></div><div class="in"><div class="eyebrow">卷首 · 总述</div><h1>洪山是谁</h1><div class="tag">${esc(z.tagline)}</div></div><div class="scroll">向下阅读</div></header>
+    main.innerHTML = `<header class="ph"><div class="bg" data-bg="${'zongshu'}"></div><div class="in"><div class="eyebrow">卷首 · 总述</div><h1>洪山是谁</h1><div class="tag">${esc(z.tagline)}</div></div><div class="scroll">向下阅读</div></header>
       <section class="sec"><div class="wrap-narrow"><div class="eyebrow">一 段 话 认 识 洪 山</div><p class="lead reveal">${esc(z.lead)}</p></div><div class="wrap">${numsHTML(z.numbers, 'v3')}</div></section>
       ${section('全 景 八 题', '八个角度看洪山', `<div class="pano reveal">${(z.panorama || []).map((x, i) => `<div><h4><i>${icons[i % 8]} 0${i + 1}</i>${esc(x.title)}</h4><p>${esc(x.text)}</p></div>`).join('')}</div>`)}
       ${section('总 述 拾 趣', '值得记住的几件事', storiesHTML(z.stories, 'notes'))}
@@ -243,7 +273,7 @@
     chrome('timeline.html');
     const d = P.dashiji, ev = d.events.slice().sort((a, b) => a.year - b.year);
     const main = document.createElement('main');
-    main.innerHTML = `<header class="ph band"><div class="bg" style="background-image:url(${img('dashiji')})"></div><div class="in"><div><div class="eyebrow">卷首 · 大事记</div><h1>三千年，一条河</h1><div class="tag">${esc(d.tagline)}</div></div><div class="seal">大事<br>纪年</div></div></header>
+    main.innerHTML = `<header class="ph band"><div class="bg" data-bg="${'dashiji'}"></div><div class="in"><div><div class="eyebrow">卷首 · 大事记</div><h1>三千年，一条河</h1><div class="tag">${esc(d.tagline)}</div></div><div class="seal">大事<br>纪年</div></div></header>
       <section class="sec" style="padding-bottom:20px"><div class="wrap-narrow"><p class="lead reveal">${esc(d.lead)}</p></div></section>
       <div class="tl-filter">${['全部', '古代', '近代', '当代', '只看大事'].map((x, i) => `<button class="${i ? '' : 'on'}" data-f="${x}">${x}</button>`).join('')}</div>
       <div class="tl" id="tl"></div>
@@ -267,7 +297,7 @@
     chrome('people.html');
     const r = P.renwu, fields = ['全部', ...Array.from(new Set(r.people.map((x) => x.field)))];
     const main = document.createElement('main');
-    main.innerHTML = `<header class="ph split"><div class="bg" style="background-image:url(${img('renwu')})"></div><div class="in"><div class="eyebrow">卷末 · 人物</div><h1>洪山人物</h1><div class="tag">${esc(r.tagline)}</div></div></header>
+    main.innerHTML = `<header class="ph split"><div class="bg" data-bg="${'renwu'}"></div><div class="in"><div class="eyebrow">卷末 · 人物</div><h1>洪山人物</h1><div class="tag">${esc(r.tagline)}</div></div></header>
       <section class="sec" style="padding-top:40px"><div class="wrap-narrow"><p class="lead reveal">${esc(r.lead)}</p></div><div class="wrap">${numsHTML(r.stats, 'v2')}</div></section>
       <section class="sec" style="padding-top:0"><div class="wrap"><div class="eyebrow">人 物 传 略</div><h2 class="sec-title">${r.people.length} 位传主 · 点卡片读生平</h2><p class="muted" style="margin:-12px 0 22px;font-size:13px">原书导语称“人物传略收录75人”，经逐页核对，正文（第910—933页）实有 ${r.people.length} 篇传略，此处按正文收录。</p>
         <div class="tl-filter" style="position:static;background:none;justify-content:flex-start">${fields.map((f, i) => `<button class="${i ? '' : 'on'}" data-f="${f}">${f}</button>`).join('')}</div>
@@ -296,7 +326,7 @@
     const f = P.fulu;
     const pal = [['#3a2d5c', '#7a2f5c'], ['#2f5d50', '#1d3b33'], ['#8a4b1f', '#5c2b12'], ['#244a6b', '#1a2f45'], ['#7a2f5c', '#b8860b'], ['#5a3a2a', '#2f1f16']];
     const main = document.createElement('main');
-    main.innerHTML = `<header class="ph scrollv"><div class="in"><div class="eyebrow">卷末 · 附录</div><h1>诗文传说</h1><div class="tag">卓刀泉、放鹰台、孝子菜……</div></div><div class="bg" style="background-image:url(${img('fulu')})"></div></header>
+    main.innerHTML = `<header class="ph scrollv"><div class="in"><div class="eyebrow">卷末 · 附录</div><h1>诗文传说</h1><div class="tag">卓刀泉、放鹰台、孝子菜……</div></div><div class="bg" data-bg="${'fulu'}"></div></header>
       ${section('民 间 传 说', `${f.legends.length} 个故事，点开来读`, `<div class="lg-grid">${f.legends.map((l, i) => { const [a, b] = pal[i % pal.length]; return `<div class="lg reveal" data-i="${i}" style="--a:${a};--b:${b}"><span class="n">传说 · ${String(i + 1).padStart(2, '0')}</span><h3>${esc(l.title)}</h3><p>${esc(l.text.slice(0, 34))}…</p></div>`; }).join('')}</div>`)}
       ${section('诗 词', '历代诗人笔下的洪山（向左滑动）', `<div class="poems">${f.poems.map((p) => `<div class="poem"><h4>${esc(p.title)}</h4><span class="au">〔${esc(p.dynasty)}〕${esc(p.author)}</span><div class="tx">${esc(p.text)}</div></div>`).join('')}</div>`)}
       ${section('楹 联', '寺观亭台上的对子', `<div class="couplets">${f.couplets.map((c) => { const [a, b] = c.text.split('\n'); return `<div class="cp reveal"><div class="pair"><div>${esc(a || '')}</div><div>${esc(b || '')}</div></div><small>${esc(c.place)}</small></div>`; }).join('')}</div>`)}
@@ -321,7 +351,7 @@
     const leg = f.legends.filter((l) => /菜薹|孝子菜/.test(l.title));
     const zi = a.chapters.findIndex((x) => x.zhuanji);
     const main = document.createElement('main');
-    main.innerHTML = `<header class="ph arch"><div class="bg" style="background-image:url(${img('caitai')})"></div><div class="in"><div class="eyebrow">专 题 · 专 记</div><h1>洪山菜薹</h1><div class="tag">紫薹黄花，金殿玉菜</div></div></header>
+    main.innerHTML = `<header class="ph arch"><div class="bg" data-bg="${'caitai'}"></div><div class="in"><div class="eyebrow">专 题 · 专 记</div><h1>洪山菜薹</h1><div class="tag">紫薹黄花，金殿玉菜</div></div></header>
       <section class="sec"><div class="wrap-narrow"><p class="lead reveal">${esc(c.lead)}</p></div><div class="wrap">${numsHTML(c.facts, 'v2')}</div></section>
       ${section('古 籍 里 的 菜 薹', '书上是这么写的', `<div class="ct-quote">${c.quotes.map((q) => `<div class="reveal"><p>${esc(q.text)}</p><small>${esc(q.src)}</small></div>`).join('')}</div>`)}
       ${section('身 世 年 表', '从油菜到红菜薹', `<div class="ct-tl">${c.timeline.map((t) => `<div class="reveal"><b>${esc(t.time)}</b>${esc(t.text)}</div>`).join('')}</div>`)}
