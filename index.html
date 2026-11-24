@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>洪山 · 一株菜薹里的区志</title>
 <meta name="description" content="以一只瓢虫的视角走进洪山菜薹林，读懂《洪山区志》里的山水、物产、人物与风俗。">
-<link rel="stylesheet" href="assets/css/site.css?v=1124e">
+<link rel="stylesheet" href="assets/css/site.css?v=1124f">
 <style>
   html,body{height:100%;overflow:hidden;background:#efe6cf}
   .sky{position:fixed;inset:0;background:
@@ -58,11 +58,37 @@
   .copy p{color:#24121c;font-weight:600;text-shadow:0 0 3px rgba(255,250,236,.95),0 0 10px rgba(255,250,236,.9),0 0 22px rgba(255,250,236,.7)}
   .copy .en{color:#4a3340;text-shadow:0 0 6px rgba(255,250,236,.9)}
   .copy .loc{color:#5e1f45;font-weight:600;text-shadow:0 0 3px rgba(255,250,236,.95),0 0 10px rgba(255,250,236,.9)}
+  .mnav{display:none}
   @media (max-width:760px),(max-width:900px) and (orientation:portrait){
-    .copy{left:7vw;top:104px;bottom:auto;transform:none;max-width:86vw}
-    .copy h1{font-size:clamp(64px,21vw,92px)}.copy .en{margin-bottom:14px}.cta{margin-top:20px;gap:10px}.btn-main{padding:12px 28px;font-size:16px}.btn-ghost{padding:10px 18px}
-    .topnav{display:none}.hint{display:none}.foot{left:6vw;right:6vw;bottom:14px;font-size:11px}
-    .copy p{font-size:15px;line-height:1.85}
+    /* 手机：改成可滚动的竖向文档流，按钮和出处永远拿得到 */
+    html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+    body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+    .brand{position:absolute;left:5vw;top:max(12px,env(safe-area-inset-top))}
+    .brand b{font-size:18px;margin-bottom:9px}
+    .mnav{display:flex;position:relative;z-index:6;gap:6px;overflow-x:auto;scrollbar-width:none;margin:calc(82px + env(safe-area-inset-top)) 0 0;padding:0 5vw 4px}
+    .mnav::-webkit-scrollbar{display:none}
+    .mnav a{flex:none;font-size:14px;letter-spacing:.12em;color:#3a2230;text-decoration:none;padding:8px 14px;border-radius:999px;border:1px solid rgba(122,47,92,.3);background:#fdf5e2}
+    .copy{position:relative;left:auto;top:auto;bottom:auto;transform:none;max-width:none;margin:0;padding:18px 7vw 0;display:flex;flex-direction:column}
+    .copy .loc{order:1}.copy h1{order:2}.copy .en{order:3}.copy .cta{order:4}.copy p{order:5;margin-top:18px}
+    .copy .loc{font-size:12px;letter-spacing:.4em}
+    .copy h1{font-size:min(19vw,88px);margin:.1em 0 0;white-space:nowrap}
+    .copy .en{margin-bottom:12px}
+    .copy p{font-size:15px;line-height:1.8;padding:10px 12px;margin-left:-12px;margin-right:-12px;border-radius:12px;background:rgba(253,245,226,.55)}
+    .cta{margin-top:16px;gap:10px;flex-wrap:wrap}
+    .btn-main{padding:0 26px;height:46px;font-size:16px;white-space:nowrap;letter-spacing:.4em}
+    .btn-ghost{padding:0 16px;height:46px;display:inline-flex;align-items:center;white-space:nowrap;font-size:14px;letter-spacing:.1em}
+    .topnav{display:none}.hint{display:none}
+    .foot{position:relative;left:auto;right:auto;bottom:auto;margin:28px 7vw 0;padding-bottom:calc(22px + env(safe-area-inset-bottom));font-size:12px;line-height:1.7}
+    .copy>*{animation-duration:.8s}
+    .copy .loc{animation-delay:.5s}.copy h1{animation-delay:.6s}.copy .en{animation-delay:.7s}.copy p{animation-delay:.8s}.copy .cta{animation-delay:.9s}
+  }
+  /* 屏幕较矮（如微信内置浏览器、大字体）：压缩间距，尽量让按钮留在第一屏 */
+  @media (max-width:760px) and (max-height:700px),(max-width:900px) and (orientation:portrait) and (max-height:700px){
+    .mnav{margin-top:calc(70px + env(safe-area-inset-top))}
+    .copy{padding-top:10px}
+    .copy h1{font-size:min(15vw,70px)}
+    .copy p{font-size:14px;line-height:1.7}
+    .cta{margin-top:12px}
   }
 </style>
 </head>
@@ -80,6 +106,7 @@
   <a href="atlas.html">志 览</a><a href="overview.html">区 情</a><a href="timeline.html">大事记</a><a href="caitai.html">菜 薹</a><a href="people.html">人 物</a><a href="legends.html">传 说</a>
 </nav>
 
+<nav class="mnav"><a href="atlas.html">志览</a><a href="overview.html">区情</a><a href="timeline.html">大事记</a><a href="caitai.html">菜薹</a><a href="people.html">人物</a><a href="legends.html">传说</a></nav>
 <section class="copy">
   <div class="loc">武汉 · 东南</div>
   <h1><span>洪</span><span>山</span></h1>
@@ -95,8 +122,8 @@
 <div class="hint"><em></em>移动鼠标，起一阵风</div>
 <div class="intro-veil"></div>
 
-<script src="assets/js/logo.js?v=1124e"></script>
+<script src="assets/js/logo.js?v=1124f"></script>
 <script>document.getElementById('brand').innerHTML = HSLogo(46) + '<b>洪山志览</b>';</script>
-<script src="assets/js/hero.js?v=1124e"></script>
+<script src="assets/js/hero.js?v=1124f"></script>
 </body>
 </html>

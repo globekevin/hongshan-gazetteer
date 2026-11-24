@@ -441,7 +441,14 @@
     requestAnimationFrame(tick);
   }
 
-  window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(resize, 120); });
+  // 手机滚动时地址栏伸缩只改高度：宽度不变且高度变化 <25% 时不重排，避免菜薹林跳动
+  window.addEventListener('resize', () => {
+    clearTimeout(window.__rz);
+    window.__rz = setTimeout(() => {
+      if (window.innerWidth === W && Math.abs(window.innerHeight - H) < H * 0.25) return;
+      resize();
+    }, 120);
+  });
   window.addEventListener('pointermove', (e) => {
     mouse.tx = e.clientX / W - 0.5; mouse.ty = e.clientY / H - 0.5;
     if (mouse.px >= 0) { const sp = Math.abs(e.clientX - mouse.px); mouse.gust = Math.min(0.9, mouse.gust + sp * 0.004); mouse.gx = e.clientX; }
